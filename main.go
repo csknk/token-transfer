@@ -125,6 +125,8 @@ func BuildTokenTransferTransaction(sender solanago.PublicKey, receiver solanago.
 		return nil, fmt.Errorf("can't get ATA for receiver %s: %v", receiver.String(), err)
 	}
 
+	// This is needed because the receiver needs a token account (ATA) - if it does not have one, our transfer
+	// transaction needs to create one using the NewCreateInstruction method.
 	recipientTokenAccount, err := client.GetAccountInfo(context.Background(), receiverAta)
 	if err != nil || recipientTokenAccount == nil || len(recipientTokenAccount.Value.Data.GetBinary()) == 0 {
 		instructions = append(
@@ -137,6 +139,7 @@ func BuildTokenTransferTransaction(sender solanago.PublicKey, receiver solanago.
 		)
 	}
 
+	// The actual token transfer instruction
 	instructions = append(
 		instructions,
 		token.NewTransferInstruction(
